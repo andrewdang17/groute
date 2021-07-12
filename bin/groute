@@ -1,12 +1,18 @@
 #!/usr/bin/env ruby
-if ARGV.first == '-h' || ARGV.first == '--help'
-  puts 'Usage: groute <PATTERN>'
-  puts "Description: Equivalent to 'rake routes | grep <PATTERN>' but caches output.  Relies on config/routes.rb modification time to refresh cache."
+
+if ARGV.first == "-h" || ARGV.first == "--help"
+  puts "Usage: groute <PATTERN>"
+  puts "Description: Equivalent to "rails routes | grep <PATTERN>" but caches output.  Relies on config/routes.rb modification time to refresh cache."
 else
-  groutes_store = File.expand_path('tmp/.groutes')
-  routes_file = File.expand_path('config/routes.rb')
-  if !File.exists?(groutes_store) || (File.mtime(groutes_store) < File.mtime(routes_file)) || File.foreach(groutes_store).inject(0){|c, line| c+1} < 10 && File.foreach(groutes_store).collect{|l| l}.join('').strip.size < 9 # Assuming a valid route is longer than 8 chars. 'PUT / a#b'
-    `rake routes > #{groutes_store}`
+  groutes_store = File.expand_path("tmp/.groutes")
+  routes_dir = File.expand_path(Rails.root.join("config/routes"))
+
+  if (!File.exist?(groutes_store) ||
+    (File.mtime(groutes_store) < File.mtime(routes_dir)) ||
+    File.foreach(groutes_store).inject(0) { |c, line| c + 1 } < 10 &&
+    File.foreach(groutes_store).collect { |l| l }.join("").strip.size < 9 # Assuming a valid route is longer than 8 chars. "PUT / a#b"
+  )
+    `rails routes > #{groutes_store}`
   end
 
   if ARGV.nil? || ARGV.size == 0
